@@ -5,7 +5,7 @@
  * Description: Gateway de pagamento Bcash para WooCommerce.
  * Author: claudiosanches
  * Author URI: http://www.claudiosmweb.com/
- * Version: 1.2.1
+ * Version: 1.3
  * License: GPLv2 or later
  * Text Domain: wcbcash
  * Domain Path: /languages/
@@ -67,6 +67,7 @@ function wcbcash_gateway_load() {
          * @return void
          */
         public function __construct() {
+            global $woocommerce;
 
             $this->id             = 'bcash';
             $this->icon           = plugins_url( 'images/bcash.png', __FILE__ );
@@ -87,12 +88,14 @@ function wcbcash_gateway_load() {
             $this->email          = $this->settings['email'];
             $this->token          = $this->settings['token'];
             $this->invoice_prefix = !empty( $this->settings['invoice_prefix'] ) ? $this->settings['invoice_prefix'] : 'WC-';
+            $this->debug          = $this->settings['debug'];
 
             // Actions.
             add_action( 'init', array( &$this, 'check_ipn_response' ) );
             add_action( 'valid_bcash_ipn_request', array( &$this, 'successful_request' ) );
             add_action( 'woocommerce_receipt_bcash', array( &$this, 'receipt_page' ) );
             add_action( 'woocommerce_update_options_payment_gateways', array( &$this, 'process_admin_options' ) );
+            add_filter( 'woocommerce_available_payment_gateways', array( &$this, 'hides_when_is_outside_brazil' ) );
 
             // Valid for use.
             $this->enabled = ( 'yes' == $this->settings['enabled'] ) && !empty( $this->email ) && !empty( $this->token ) && $this->is_valid_for_use();
@@ -102,6 +105,11 @@ function wcbcash_gateway_load() {
 
             // Checks if token is not empty.
             $this->token == '' ? add_action( 'admin_notices', array( &$this, 'token_missing_message' ) ) : '';
+
+            // Active logs.
+            if ( $this->debug == 'yes' ) {
+                $this->log = $woocommerce->logger();
+            }
         }
 
         /**
@@ -188,6 +196,18 @@ function wcbcash_gateway_load() {
                     'type' => 'text',
                     'description' => __( 'Please enter a prefix for your invoice numbers. If you use your Bcash account for multiple stores ensure this prefix is unqiue as Bcash will not allow orders with the same invoice number.', 'wcbcash' ),
                     'default' => 'WC-'
+                ),
+                'testing' => array(
+                    'title' => __( 'Gateway Testing', 'wcbcash' ),
+                    'type' => 'title',
+                    'description' => '',
+                ),
+                'debug' => array(
+                    'title' => __( 'Debug Log', 'wcbcash' ),
+                    'type' => 'checkbox',
+                    'label' => __( 'Enable logging', 'wcbcash' ),
+                    'default' => 'no',
+                    'description' => __( 'Log Bcash events, such as API requests, inside <code>woocommerce/logs/bcash.txt</code>', 'wcbcash' ),
                 )
             );
 
@@ -302,6 +322,10 @@ function wcbcash_gateway_load() {
 
             $args = $this->get_form_args( $order );
 
+            if ( $this->debug == 'yes' ) {
+                $this->log->add( 'bcash', 'Payment arguments for order #' . $order_id . ': ' . print_r( $args, true ) );
+            }
+
             $args_array = array();
 
             foreach ( $args as $key => $value ) {
@@ -374,6 +398,10 @@ function wcbcash_gateway_load() {
          */
         public function check_ipn_request_is_valid() {
 
+            if ( $this->debug == 'yes') {
+                $this->log->add( 'bcash', 'Checking IPN request...' );
+            }
+
             // Get recieved values from post data.
             $received_values = (array) stripslashes_deep( $_POST );
 
@@ -394,10 +422,22 @@ function wcbcash_gateway_load() {
             // Post back to get a response.
             $response = wp_remote_post( $this->ipn_url, $params );
 
+            if ( $this->debug == 'yes' ) {
+                $this->log->add( 'bcash', 'IPN Response: ' . print_r( $response, true ) );
+            }
+
             // Check to see if the request was valid.
             if ( !is_wp_error( $response ) && $response['response']['code'] >= 200 && $response['response']['code'] < 300 && ( strcmp( $response['body'], 'VERIFICADO' ) == 0 ) ) {
 
+                if ( $this->debug == 'yes' ) {
+                    $this->log->add( 'bcash', 'Received valid IPN response from Bcash' );
+                }
+
                 return true;
+            } else {
+                if ( $this->debug == 'yes' ) {
+                    $this->log->add( 'bcash', 'Received invalid IPN response from Bcash.' );
+                }
             }
 
             return false;
@@ -446,6 +486,10 @@ function wcbcash_gateway_load() {
                 // Checks whether the invoice number matches the order.
                 // If true processes the payment.
                 if ( $order->id === $order_id ) {
+
+                    if ( $this->debug == 'yes' ) {
+                        $this->log->add( 'bcash', 'Payment status from order #' . $order->id . ': ' . $posted['status'] );
+                    }
 
                     switch ( $posted['cod_status'] ) {
                         case '0':
@@ -528,21 +572,23 @@ function wcbcash_gateway_load() {
             echo $message;
         }
 
+        /**
+         * Hides the Bcash with payment method with the customer lives outside Brazil
+         *
+         * @param  array $available_gateways Default Available Gateways.
+         *
+         * @return array                    New Available Gateways.
+         */
+        function hides_when_is_outside_brazil( $available_gateways ) {
+
+            if ( isset( $_REQUEST['country'] ) && $_REQUEST['country'] != 'BR' ) {
+
+                // Remove standard shipping option.
+                unset( $available_gateways['bcash'] );
+            }
+
+            return $available_gateways;
+        }
+
     } // class WC_BCash_Gateway.
 } // function wcbcash_gateway_load.
-
-/**
- * Hidden when the purchase is outside the Brazil.
- */
-add_filter( 'woocommerce_available_payment_gateways', 'wcbcash_hidden_when_is_outside_brasil' );
-
-function wcbcash_hidden_when_is_outside_brasil( $available_gateways ) {
-
-    if ( isset( $_REQUEST['country'] ) && $_REQUEST['country'] != 'BR' ) {
-
-        // remove standard shipping option.
-        unset( $available_gateways['bcash'] );
-    }
-
-    return $available_gateways;
-}
