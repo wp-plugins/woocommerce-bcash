@@ -1,10 +1,10 @@
 === WooCommerce Bcash ===
 Contributors: claudiosanches
 Donate link: http://claudiosmweb.com/doacoes/
-Tags: ecommerce, e-commerce, commerce, wordpress ecommerce, checkout, payment, payment gateway, bcash
+Tags: ecommerce, e-commerce, commerce, woocommerce, checkout, payment, bcash
 Requires at least: 3.0
-Tested up to: 3.5.1
-Stable tag: 1.4
+Tested up to: 3.6
+Stable tag: 1.5.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -17,6 +17,10 @@ Adds Bcash gateway to the WooCommerce plugin
 This plugin adds Bcash gateway to WooCommerce.
 
 Please notice that WooCommerce must be installed and active.
+
+= Contribute =
+
+You can contribute to the source code in our [GitHub](https://github.com/claudiosmweb/woocommerce-bcash) page.
 
 ### Descrição em Português: ###
 
@@ -39,6 +43,10 @@ Você pode esclarecer suas dúvidas usando:
 * A nossa sessão de [FAQ](http://wordpress.org/extend/plugins/woocommerce-bcash/faq/).
 * Criando um tópico no [fórum de ajuda do WordPress](http://wordpress.org/support/plugin/woocommerce-bcash) (apenas em inglês).
 * Ou entre em contato com os desenvolvedores do plugin em nossa [página](http://claudiosmweb.com/plugins/bcash-para-woocommerce/).
+
+= Coloborar =
+
+Você pode contribuir com código-fonte em nossa página no [GitHub](https://github.com/claudiosmweb/woocommerce-bcash).
 
 == Installation ==
 
@@ -145,6 +153,13 @@ Entre em contato [clicando aqui](http://claudiosmweb.com/plugins/bcash-para-wooc
 
 == Changelog ==
 
+= 1.5.0 - 24/07/2013 =
+
+* Adicionado link de `Configurações` na página de plugins.
+* Melhorias no código.
+* Adicionado suporte para WooCommerce 2.1.
+* Adicionado objeto do pedido no filtro `woocommerce_bcash_args`.
+
 = 1.4 - 08/04/2013 =
 
 * Correção do retorno automático de dados na versão 2.0.0 ou superior do WooCommerce.
@@ -185,31 +200,19 @@ Entre em contato [clicando aqui](http://claudiosmweb.com/plugins/bcash-para-wooc
 
 == Upgrade Notice ==
 
-= 1.3 =
+= 1.5.0 =
 
-* Added error logs.
-
-= 1.2.1 =
-
-* General fixes
-
-= 1.2 =
-
-* Fixes in translation.
-
-= 1.1 =
-
-* Removed cURL in favor to wp_remote_post().
-
-= 1.0 =
-
-* Enjoy it.
+* Adicionado link de `Configurações` na página de plugins.
+* Melhorias no código.
+* Adicionado suporte para WooCommerce 2.1.
+* Adicionado objeto do pedido no filtro `woocommerce_bcash_args`.
 
 == License ==
 
-This file is part of WooCommerce Bcash.
 WooCommerce Bcash is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published
 by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+
 WooCommerce Bcash is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
-You should have received a copy of the GNU General Public License along with Author Bio Box. If not, see <http://www.gnu.org/licenses/>.
+
+You should have received a copy of the GNU General Public License along with WooCommerce Bcash. If not, see <http://www.gnu.org/licenses/>.
