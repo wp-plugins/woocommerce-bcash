@@ -19,7 +19,7 @@ class WC_BCash_Gateway extends WC_Payment_Gateway {
         $this->has_fields     = false;
         $this->method_title   = __( 'Bcash', 'wcbcash' );
 
-        // API Urls.
+        // API URLs.
         $this->payment_url    = 'https://www.bcash.com.br/checkout/pay/';
         $this->ipn_url        = 'https://www.bcash.com.br/checkout/verify/';
 
@@ -82,13 +82,10 @@ class WC_BCash_Gateway extends WC_Payment_Gateway {
         echo '<h3>' . __( 'Bcash standard', 'wcbcash' ) . '</h3>';
         echo '<p>' . __( 'Bcash standard works by sending the user to Bcash to enter their payment information.', 'wcbcash' ) . '</p>';
 
+        // Checks if is valid for use.
         if ( ! $this->is_valid_for_use() ) {
-
-            // Valid currency.
-            echo '<div class="inline error"><p><strong>' . __( 'Gateway Disabled', 'wcbcash' ) . '</strong>: ' . __( 'Bcash does not support your store currency.', 'wcbcash' ) . '</p></div>';
-
+            echo '<div class="inline error"><p><strong>' . __( 'Bcash Disabled', 'wcbcash' ) . '</strong>: ' . __( 'Works only with Brazilian Real.', 'wcbcash' ) . '</p></div>';
         } else {
-
             // Generate the HTML For the settings form.
             echo '<table class="form-table">';
             $this->generate_settings_html();
@@ -147,14 +144,14 @@ class WC_BCash_Gateway extends WC_Payment_Gateway {
             'testing' => array(
                 'title' => __( 'Gateway Testing', 'wcbcash' ),
                 'type' => 'title',
-                'description' => '',
+                'description' => ''
             ),
             'debug' => array(
                 'title' => __( 'Debug Log', 'wcbcash' ),
                 'type' => 'checkbox',
                 'label' => __( 'Enable logging', 'wcbcash' ),
                 'default' => 'no',
-                'description' => sprintf( __( 'Log Bcash events, such as API requests, inside %s', 'wcbcash' ), '<code>woocommerce/logs/moip' . sanitize_file_name( wp_hash( 'bcash' ) ) . '.txt</code>' ),
+                'description' => sprintf( __( 'Log Bcash events, such as API requests, inside %s', 'wcbcash' ), '<code>woocommerce/logs/bcash-' . sanitize_file_name( wp_hash( 'bcash' ) ) . '.txt</code>' )
             )
         );
 
@@ -281,7 +278,7 @@ class WC_BCash_Gateway extends WC_Payment_Gateway {
         if ( version_compare( WOOCOMMERCE_VERSION, '2.1', '>=' ) ) {
             $woocommerce->get_helper( 'inline-javascript' )->add_inline_js( '
                 jQuery.blockUI({
-                        message: "' . esc_js( __( 'Thank you for your order. We are now redirecting you to Bcash to make payment.', 'wcpagseguro' ) ) . '",
+                        message: "' . esc_js( __( 'Thank you for your order. We are now redirecting you to Bcash to make payment.', 'wcbcash' ) ) . '",
                         baseZ: 99999,
                         overlayCSS:
                         {
@@ -304,7 +301,7 @@ class WC_BCash_Gateway extends WC_Payment_Gateway {
         } else {
             $woocommerce->add_inline_js( '
                 jQuery("body").block({
-                        message: "<img src=\"' . esc_url( $woocommerce->plugin_url() . '/assets/images/ajax-loader.gif' ) . '\" alt=\"Redirecting&hellip;\" style=\"float:left; margin-right: 10px;\" />' . __( 'Thank you for your order. We are now redirecting you to Bcash to make payment.', 'wcpagseguro' ) . '",
+                        message: "<img src=\"' . esc_url( $woocommerce->plugin_url() . '/assets/images/ajax-loader.gif' ) . '\" alt=\"Redirecting&hellip;\" style=\"float:left; margin-right: 10px;\" />' . __( 'Thank you for your order. We are now redirecting you to Bcash to make payment.', 'wcbcash' ) . '",
                         overlayCSS:
                         {
                             background: "#fff",
@@ -369,7 +366,7 @@ class WC_BCash_Gateway extends WC_Payment_Gateway {
     }
 
     /**
-     * Check ipn.
+     * Check IPN.
      *
      * @return bool
      */
@@ -456,7 +453,7 @@ class WC_BCash_Gateway extends WC_Payment_Gateway {
 
                 switch ( $posted['cod_status'] ) {
                     case '0':
-                        $order->update_status( 'on-hold', __( 'Payment under review by Bcash.', 'wcbcash' ) );
+                        $order->update_status( 'on-hold', __( 'Bcash: Payment under review.', 'wcbcash' ) );
 
                         break;
                     case '1':
@@ -492,12 +489,12 @@ class WC_BCash_Gateway extends WC_Payment_Gateway {
                         }
 
                         // Payment completed.
-                        $order->add_order_note( __( 'Payment completed.', 'wcbcash' ) );
+                        $order->add_order_note( __( 'Bcash: Payment completed.', 'wcbcash' ) );
                         $order->payment_complete();
 
                         break;
                     case '2':
-                        $order->update_status( 'cancelled', __( 'Payment canceled by Bcash.', 'wcbcash' ) );
+                        $order->update_status( 'cancelled', __( 'Bcash: Payment canceled.', 'wcbcash' ) );
 
                         break;
 
@@ -515,7 +512,7 @@ class WC_BCash_Gateway extends WC_Payment_Gateway {
      * @return string Error Mensage.
      */
     public function mail_missing_message() {
-        echo '<div class="error"><p>' . sprintf( __( '<strong>Bcash Disabled</strong> You should inform your email address. %sClick here to configure!%s', 'wcbcash' ), '<a href="' . admin_url( 'admin.php?page=woocommerce_settings&tab=payment_gateways&section=WC_BCash_Gateway' ) . '">', '</a>' ) . '</p></div>';
+        echo '<div class="error"><p><strong>' . __( 'Bcash Disabled', 'wcbcash' ) . '</strong>: ' . sprintf( __( 'You should inform your email address. %s', 'wcbcash' ), '<a href="' . admin_url( 'admin.php?page=woocommerce_settings&tab=payment_gateways&section=WC_BCash_Gateway' ) . '">' . __( 'Click here to configure!', 'wcbcash' ) . '</a>' ) . '</p></div>';
     }
 
     /**
@@ -524,7 +521,7 @@ class WC_BCash_Gateway extends WC_Payment_Gateway {
      * @return string Error Mensage.
      */
     public function token_missing_message() {
-        echo '<div class="error"><p>' . sprintf( __( '<strong>Bcash Disabled</strong> You should inform your token. %sClick here to configure!%s', 'wcbcash' ), '<a href="' . admin_url( 'admin.php?page=woocommerce_settings&tab=payment_gateways&section=WC_BCash_Gateway' ) . '">', '</a>' ) . '</p></div>';
+        echo '<div class="error"><p><strong>' . __( 'Bcash Disabled', 'wcbcash' ) . '</strong>: ' . sprintf( __( 'You should inform your token. %s', 'wcbcash' ), '<a href="' . admin_url( 'admin.php?page=woocommerce_settings&tab=payment_gateways&section=WC_BCash_Gateway' ) . '">' . __( 'Click here to configure!', 'wcbcash' ) . '</a>' ) . '</p></div>';
     }
 
 }
